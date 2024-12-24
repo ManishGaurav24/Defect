@@ -12,6 +12,7 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 import asyncio
 from langchain.retrievers import ContextualCompressionRetriever
+import inspect
 from flashrank import Ranker
 from langchain.retrievers.document_compressors import FlashrankRerank
 
@@ -62,10 +63,14 @@ async def generating_defect(issues):
             raise ValueError("Vectorstore not initialized. Please run embeddings first.")
 
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=GOOGLE_API_KEY, temperature=0)
-    
-    flashrank_client = Ranker(model_name="ms-marco-MiniLM-L-12-v2")
-    compressor = FlashrankRerank(client=flashrank_client, top_n=3)
-    compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=vectorstore.as_retriever())
+    model_name = "ms-marco-MiniLM-L-12-v2"
+    print("Loading Ranker model...")
+    flashrank_client = Ranker(model_name=model_name)
+    print("Ranker model loaded.")
+    print("Loading FlashrankRerank model...")
+    compressor = FlashrankRerank(client=flashrank_client, top_n=3, model=model_name)
+    print("FlashrankRerank model loaded.")
+    compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=vectorstore.as_retriever(search_kwargs={"k": 5}))
 
     # Consolidated responses
     consolidated_responses = []
@@ -117,6 +122,9 @@ async def generating_defect(issues):
 
 def handle_start_embedding_button_click(filepath):
     print("Start Embedding button clicked...")
+    # Print the signature of the Ranker class
+    print(inspect.signature(Ranker.__init__))
+    print(inspect.signature(FlashrankRerank.__init__))
     vector_embedding(filepath)
 
 def handle_defect_detection_button_click(issue):
