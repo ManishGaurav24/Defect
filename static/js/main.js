@@ -171,12 +171,19 @@ function showTestDataInput() {
     }
 }
 
+// Add a function to hide output
+function hideOutput() {
+    const outputDiv = document.getElementById('output');
+    if (outputDiv) {
+        outputDiv.style.display = 'none';
+    }
+}
+
 // Event listeners for menu links
 document.querySelectorAll('.menu a')[0].addEventListener('click', (event) => {
     event.preventDefault();
+    hideOutput();
     showDefectJiraInput();
 });
 
-
-// Event listener for radio buttons
 
